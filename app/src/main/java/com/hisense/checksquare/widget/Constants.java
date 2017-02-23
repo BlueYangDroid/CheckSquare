@@ -14,5 +14,4 @@ public class Constants {
 
     public static final String CHECK_NAME_ROM = "rom";
     public static final String CHECK_SERVICE_ROM_MAXSIZE = "rom_maxSize";
-    public static final String CHECK_SERVICE_ROM_LIMIT = "rom_appLimit";
 }

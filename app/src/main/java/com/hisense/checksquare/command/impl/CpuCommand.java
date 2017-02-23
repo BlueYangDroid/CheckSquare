@@ -38,11 +38,11 @@ public class CpuCommand implements IPropCommand {
                     String strResult = CommandUtil.processCommand(COMMAND_CPU_MAX_FREQ).trim();
                     long parseLong = Long.parseLong(strResult);
                     float result = (float) parseLong / (1000 * 1000);
-                    // update service Actual
+                    // 1,update service Actual
                     LogUtil.d("CHECK_SERVICE_CPU_MAXFREQ: Actual = %f", result);
                     service.serviceActual = String.valueOf(result);
 
-                    // update service Result
+                    // 2,update service Result
                     String serviceTarget = service.serviceTarget;
                     String serviceUnit = service.serviceUnit;
                     String format = service.format;
@@ -64,8 +64,10 @@ public class CpuCommand implements IPropCommand {
                 } else if (Constants.CHECK_SERVICE_CPU_NUM.equalsIgnoreCase(service.serviceName)) {
                     LogUtil.d("CHECK_SERVICE_CPU_NUM enter ---->");
                     int cpuNum = getCpuNum();
-
+                    // 1,update service Actual
                     service.serviceActual = String.valueOf(cpuNum);
+
+                    // 2,update service Result
                     if (cpuNum > 3) {
                         service.serviceResult = CheckEntity.CHECK_STATUS_OK;
                     } else {
@@ -77,32 +79,36 @@ public class CpuCommand implements IPropCommand {
                 }
             }// <---- end the service for{}
 
-            // update entity Result
-            boolean isServicesOk = true;
-            int resSize = serviceResults.size();
-            if (resSize > 0 && resSize == serviceSize) {
-                for (int i = 0; i < resSize; i++) {
-                    if (!serviceResults.valueAt(i)) {
-                        isServicesOk = false;
-                        break;
-                    }
-                }
-                if (isServicesOk) {
-                    entity.checkResult = CheckEntity.CHECK_STATUS_OK;
-                } else {
-                    entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-                }
-            } else {
-                entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-            }
+            // 3,update entity Result
+            checkServiceResults(entity, serviceResults, serviceSize);
 
         } else {
             // services empty
             entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
         }
-        LogUtil.d("CHECK_NAME_CPU end <---- result = %s", entity.checkResult);
 
+        LogUtil.d("CHECK_NAME_CPU end <---- result = %s", entity.checkResult);
         return entity;
+    }
+
+    private void checkServiceResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
+        boolean isServicesOk = true;
+        int resSize = serviceResults.size();
+        if (resSize > 0 && resSize == serviceSize) {
+            for (int i = 0; i < resSize; i++) {
+                if (!serviceResults.valueAt(i)) {
+                    isServicesOk = false;
+                    break;
+                }
+            }
+            if (isServicesOk) {
+                entity.checkResult = CheckEntity.CHECK_STATUS_OK;
+            } else {
+                entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
+            }
+        } else {
+            entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
+        }
     }
 
     // 获取CPU核心数
