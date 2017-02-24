@@ -2,14 +2,20 @@ package com.hisense.checksquare.entity;
 
 import com.bluelinelabs.logansquare.annotation.JsonObject;
 
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
+
 /**
  * Created by yanglijun.ex on 2017/2/9.
  * 非private属性都会接受解析和序列化，即使属性没有写@JsonFields注解，但要先配置 fieldDetectionPolicy
  */
-
-@JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.NONPRIVATE_FIELDS)
+@Entity // greenDao annotation
+@JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.NONPRIVATE_FIELDS)   // logan square annotation
 public class CheckService {
 
+    @Id // greenDao annotation
+    public int serviceId;
     public String serviceName;
     public String format;
     public String serviceUnit;
@@ -17,16 +23,89 @@ public class CheckService {
     public String serviceActual;
     public String serviceResult;
 
+    @Generated(hash = 932616929)
+    public CheckService(int serviceId, String serviceName, String format, String serviceUnit,
+            String serviceTarget, String serviceActual, String serviceResult) {
+        this.serviceId = serviceId;
+        this.serviceName = serviceName;
+        this.format = format;
+        this.serviceUnit = serviceUnit;
+        this.serviceTarget = serviceTarget;
+        this.serviceActual = serviceActual;
+        this.serviceResult = serviceResult;
+    }
+
+    @Generated(hash = 766365664)
+    public CheckService() {
+    }
+
     @Override
     public String toString() {
         return new StringBuilder().append("CheckService{")
-                .append("serviceName='").append(serviceName).append("\'")
+                .append("serviceId=").append(serviceId)
+                .append(", serviceName='").append(serviceName).append("\'")
                 .append(", format='").append(format).append("\'")
                 .append(", serviceUnit='" ).append(serviceUnit).append("\'")
                 .append(", serviceTarget='" ).append( serviceTarget ).append("\'")
                 .append(", serviceActual='" ).append(serviceActual).append("\'")
                 .append(", serviceResult='" ).append(serviceResult).append("\'")
                 .append("}").toString();
+    }
+
+    public int getServiceId() {
+        return this.serviceId;
+    }
+
+    public void setServiceId(int serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public String getServiceName() {
+        return this.serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getFormat() {
+        return this.format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public String getServiceUnit() {
+        return this.serviceUnit;
+    }
+
+    public void setServiceUnit(String serviceUnit) {
+        this.serviceUnit = serviceUnit;
+    }
+
+    public String getServiceTarget() {
+        return this.serviceTarget;
+    }
+
+    public void setServiceTarget(String serviceTarget) {
+        this.serviceTarget = serviceTarget;
+    }
+
+    public String getServiceActual() {
+        return this.serviceActual;
+    }
+
+    public void setServiceActual(String serviceActual) {
+        this.serviceActual = serviceActual;
+    }
+
+    public String getServiceResult() {
+        return this.serviceResult;
+    }
+
+    public void setServiceResult(String serviceResult) {
+        this.serviceResult = serviceResult;
     }
 
     /*public String devId;

@@ -3,6 +3,8 @@ package com.hisense.checksquare.command.impl;
 import android.util.SparseBooleanArray;
 
 import com.hisense.checksquare.command.IPropCommand;
+import com.hisense.checksquare.condition.ConditionMaster;
+import com.hisense.checksquare.condition.IConditioner;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.entity.CheckService;
 import com.hisense.checksquare.widget.CommandUtil;
@@ -43,20 +45,9 @@ public class CpuCommand implements IPropCommand {
                     service.serviceActual = String.valueOf(result);
 
                     // 2,update service Result
-                    String serviceTarget = service.serviceTarget;
-                    String serviceUnit = service.serviceUnit;
-                    String format = service.format;
-                    if (!StringUtil.isEmpty(serviceTarget, serviceUnit)
-                            && "G".equalsIgnoreCase(serviceUnit)
-                            && "FLOAT".equalsIgnoreCase(format)) {
-                        if (result > Float.parseFloat(serviceTarget)) {
-                            service.serviceResult = CheckEntity.CHECK_STATUS_OK;
-                        } else {
-                            service.serviceResult = CheckEntity.CHECK_STATUS_FAIL;
-                        }
-                    } else {
-                        service.serviceResult = CheckEntity.CHECK_STATUS_FAIL;
-                    }
+                    service = mergeFreqResult(service, result);
+
+                    // 3,record this result
                     boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
                     serviceResults.put(i, b);
                     LogUtil.d("CHECK_SERVICE_CPU_MAXFREQ end <---- result = %s", b);
@@ -68,19 +59,17 @@ public class CpuCommand implements IPropCommand {
                     service.serviceActual = String.valueOf(cpuNum);
 
                     // 2,update service Result
-                    if (cpuNum > 3) {
-                        service.serviceResult = CheckEntity.CHECK_STATUS_OK;
-                    } else {
-                        service.serviceResult = CheckEntity.CHECK_STATUS_FAIL;
-                    }
+                    service = mergeCpuNumResult(service, cpuNum);
+
+                    // 3,record this result
                     boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
                     serviceResults.put(i, b);
                     LogUtil.d("CHECK_SERVICE_CPU_NUM end <---- result = %d", cpuNum);
                 }
             }// <---- end the service for{}
 
-            // 3,update entity Result
-            checkServiceResults(entity, serviceResults, serviceSize);
+            // 4,update entity Result by all service records
+            entity = mergeAllResults(entity, serviceResults, serviceSize);
 
         } else {
             // services empty
@@ -91,7 +80,28 @@ public class CpuCommand implements IPropCommand {
         return entity;
     }
 
-    private void checkServiceResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
+    private CheckService mergeCpuNumResult(CheckService service, int cpuNum) {
+        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+        boolean b = false;
+        if (null != conditioner) {
+            b = conditioner.compare(service.serviceTarget, String.valueOf(cpuNum));
+        }
+        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+
+        return service;
+    }
+
+    private CheckService mergeFreqResult(CheckService service, float result) {
+        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+        boolean b = false;
+        if (null != conditioner) {
+            b = conditioner.compare(service.serviceTarget, String.valueOf(result));
+        }
+        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+        return service;
+    }
+
+    private CheckEntity mergeAllResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
         boolean isServicesOk = true;
         int resSize = serviceResults.size();
         if (resSize > 0 && resSize == serviceSize) {
@@ -109,6 +119,7 @@ public class CpuCommand implements IPropCommand {
         } else {
             entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
         }
+        return entity;
     }
 
     // 获取CPU核心数

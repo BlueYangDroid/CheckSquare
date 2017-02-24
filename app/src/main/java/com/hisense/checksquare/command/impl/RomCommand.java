@@ -5,6 +5,8 @@ import android.os.StatFs;
 import android.util.SparseBooleanArray;
 
 import com.hisense.checksquare.command.IPropCommand;
+import com.hisense.checksquare.condition.ConditionMaster;
+import com.hisense.checksquare.condition.IConditioner;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.entity.CheckService;
 import com.hisense.checksquare.widget.Constants;
@@ -44,28 +46,17 @@ public class RomCommand implements IPropCommand {
                     service.serviceActual = String.valueOf(result);
 
                     // 2,update service Result
-                    String serviceTarget = service.serviceTarget;
-                    String serviceUnit = service.serviceUnit;
-                    String format = service.format;
-                    if (!StringUtil.isEmpty(serviceTarget, serviceUnit)
-                            && "MB".equalsIgnoreCase(serviceUnit)
-                            && "LONG".equalsIgnoreCase(format)) {
-                        if (result > Long.parseLong(serviceTarget)) {
-                            service.serviceResult = CheckEntity.CHECK_STATUS_OK;
-                        } else {
-                            service.serviceResult = CheckEntity.CHECK_STATUS_FAIL;
-                        }
-                    } else {
-                        service.serviceResult = CheckEntity.CHECK_STATUS_FAIL;
-                    }
+                    service = mergeSizeResult(service, result);
+
+                    // 3,record this result
                     boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
                     serviceResults.put(i, b);
                     LogUtil.d("CHECK_SERVICE_ROM_MAXSIZE end <---- result = %s", b);
                 }
             }// <---- end the service for{}
 
-            // 3,update entity Result
-            checkServiceResults(entity, serviceResults, serviceSize);
+            // 4,update entity Result
+            mergeAllResults(entity, serviceResults, serviceSize);
 
         } else {
             // services empty
@@ -76,7 +67,17 @@ public class RomCommand implements IPropCommand {
         return entity;
     }
 
-    private void checkServiceResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
+    private CheckService mergeSizeResult(CheckService service, long result) {
+        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+        boolean b = false;
+        if (null != conditioner) {
+            b = conditioner.compare(service.serviceTarget, String.valueOf(result));
+        }
+        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+        return service;
+    }
+
+    private void mergeAllResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
         boolean isServicesOk = true;
         int resSize = serviceResults.size();
         if (resSize > 0 && resSize == serviceSize) {

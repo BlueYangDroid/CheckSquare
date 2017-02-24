@@ -1,16 +1,19 @@
 package com.hisense.checksquare.mdomain;
 
 import com.bluelinelabs.logansquare.LoganSquare;
+import com.hisense.checksquare.MyApplication;
 import com.hisense.checksquare.base.IMainConstract;
 import com.hisense.checksquare.dagger.mdomain.DaggerMainDomainComponent;
 import com.hisense.checksquare.dagger.mdomain.MainDomainComponent;
 import com.hisense.checksquare.dagger.mdomain.MainDomainModule;
+import com.hisense.checksquare.database.EntityDao;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.entity.ParseEntity;
 import com.hisense.checksquare.widget.AssetUtil;
 import com.hisense.checksquare.command.CheckCommandRouter;
 import com.hisense.checksquare.widget.Constants;
 import com.hisense.checksquare.widget.LogUtil;
+import com.hisense.checksquare.widget.ParseUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,17 +53,14 @@ public class MainDomain implements IMainConstract.IMainDomain {
 
     @Override
     public Observable<List<CheckEntity>> getCheckDatas() {
+        // TODO: 2017/2/24 make to Observables to take first
         return Observable.fromCallable(new Callable<ParseEntity>() {
                     @Override
                     public ParseEntity call() throws Exception {
-                        try {
-                            InputStream streamFromAssets = AssetUtil.getStreamFromAssets(AssetUtil.DEFAULT_ASSET_FILENAME);
-                            LogUtil.d("streamFromAssets = %s", streamFromAssets);
-                            return LoganSquare.parse(streamFromAssets, ParseEntity.class);
-                        } catch (IOException e) {
-                            LogUtil.e("IOException e = %s", e.getMessage());
-                        }
-                        return null;
+                        InputStream streamFromAssets = AssetUtil.getStreamFromAssets(AssetUtil.DEFAULT_ASSET_FILENAME);
+                        LogUtil.d("streamFromAssets = %s", streamFromAssets);
+                        ParseEntity parseEntity = ParseUtil.parse(streamFromAssets, ParseEntity.class);
+                        return parseEntity;
                     }
                 })
                 .map(new Function<ParseEntity, List<CheckEntity>>() {
@@ -71,6 +71,9 @@ public class MainDomain implements IMainConstract.IMainDomain {
                             List<CheckEntity> checkEntities = parseEntity.checkEntities;
                             if (null != checkEntities & !checkEntities.isEmpty()) {
                                 LogUtil.d("checkEntities.size = %d, %s", checkEntities.size(), checkEntities);
+
+                                // TODO: no more use db, check new prop file at sdcard
+//                                new EntityDao().insertList(MyApplication.getContext(), checkEntities);
                                 return checkEntities;
                             }
                         }
