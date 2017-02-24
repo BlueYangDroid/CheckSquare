@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -22,12 +23,22 @@ import com.hisense.checksquare.dagger.mactivity.MainModule;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.widget.ItemClickAdapter;
 import com.hisense.checksquare.widget.LogUtil;
+import com.jakewharton.rxbinding.support.v7.widget.RxRecyclerView;
+import com.jakewharton.rxbinding.support.v7.widget.RxRecyclerViewAdapter;
+import com.jakewharton.rxbinding.view.RxView;
+import com.jakewharton.rxbinding.widget.RxAdapterView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.internal.operators.flowable.FlowableFromObservable;
+import rx.functions.Action1;
 
 
 public class MainActivity extends AppCompatActivity implements IMainConstract.IMainView , View.OnClickListener{
@@ -60,13 +71,15 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Snackbar.make(view, "One key Check", Snackbar.LENGTH_SHORT)
-                        .setAction("Ok", MainActivity.this).show();*/
                 List<CheckEntity> adapterEntities = itemClickAdapter.getData();
                 if (null != adapterEntities && !adapterEntities.isEmpty()) {
                     List<CheckEntity> entities = new ArrayList<>(adapterEntities);
                     if (null != mPresenter) {
+                        // one key check
                         mPresenter.onOneKeyCheckEntities(entities);
+                        // show tip
+                        Snackbar.make(view, "CHECK PROPERTY ITEMS", Snackbar.LENGTH_SHORT)
+                                .setAction("Ok", MainActivity.this).show();
                     }
                 }
             }
@@ -80,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
     private void initRView() {
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_list);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+
         mRecyclerView.addOnItemTouchListener(new OnItemClickListener() {
             /**
              * Callback method to be invoked when an item in this AdapterView has
@@ -93,13 +108,25 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
             @Override
             public void onSimpleItemClick(final BaseQuickAdapter adapter, final View view, final int position) {
                 LogUtil.d("onSimpleOnItemClick: position = %d", position);
-                Toast.makeText(MainActivity.this, "onSimpleItemClick" + position, Toast.LENGTH_SHORT).show();
+
                 Object item = adapter.getItem(position);
                 if (item instanceof CheckEntity) {
                     CheckEntity entity = (CheckEntity) item;
-                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(entity.checkStatus)) {
+                    String checkStatus = entity.checkStatus;
+                    // call check domain
+                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(checkStatus)) {
                         mPresenter.toCheckProperty(entity);
                     }
+                    // toast strTip
+                    String strTip = "";
+                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(checkStatus) || CheckEntity.CHECK_STATUS_CHECKING.equalsIgnoreCase(checkStatus)) {
+                        strTip = getString(R.string.check_status_to_do, entity.checkName)  ;
+                    } else if (CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(checkStatus) || CheckEntity.CHECK_STATUS_FAIL.equalsIgnoreCase(checkStatus)) {
+                        strTip = getString(R.string.check_status_done, entity.checkName)  ;
+                    }
+                    Snackbar.make(view, strTip, Snackbar.LENGTH_SHORT)
+                            .setAction("Ok", MainActivity.this).show();
+//                    Toast.makeText(MainActivity.this, strTip, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -108,8 +135,9 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
 
     private void initAdapter() {
         List<CheckEntity> data = new ArrayList<>();
-        data.add(new CheckEntity(CheckEntity.TYPE_ITEM_VIEW_HW));
-        data.add(new CheckEntity(CheckEntity.TYPE_ITEM_VIEW_FUNC));
+        /*mock data*/
+//        data.add(new CheckEntity(CheckEntity.TYPE_ITEM_VIEW_HW));
+//        data.add(new CheckEntity(CheckEntity.TYPE_ITEM_VIEW_FUNC));
         itemClickAdapter = new ItemClickAdapter(mContext, data);
         itemClickAdapter.openLoadAnimation();
         mRecyclerView.setAdapter(itemClickAdapter);

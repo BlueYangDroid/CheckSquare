@@ -73,7 +73,7 @@ public class ItemClickAdapter extends BaseMultiItemQuickAdapter<CheckEntity, Bas
             for (int i = 0; i < size; i++) {
                 View view = linearLayout.getChildAt(i);
                 if (null != view && view instanceof TextView) {
-                    ((TextView) view).setText(checkServices.get(i).toString());
+                    ((TextView) view).setText(new StringBuilder(checkServices.get(i).toString()).append("\n"));
                 } else {
                     TextView textView = new TextView(mContext);
                     textView.setText(new StringBuilder(checkServices.get(i).toString()).append("\n"));

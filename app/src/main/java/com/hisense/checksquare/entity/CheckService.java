@@ -25,7 +25,7 @@ public class CheckService {
                 .append(", serviceUnit='" ).append(serviceUnit).append("\'")
                 .append(", serviceTarget='" ).append( serviceTarget ).append("\'")
                 .append(", serviceActual='" ).append(serviceActual).append("\'")
-                .append(", serviceResult=" ).append(serviceResult).append("\'")
+                .append(", serviceResult='" ).append(serviceResult).append("\'")
                 .append("}").toString();
     }
 
