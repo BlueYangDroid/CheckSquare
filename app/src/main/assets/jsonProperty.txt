@@ -1,1 +1,47 @@
-{"vers":"0.0.1","code":"001","desc":"ParseEntity desc","checkEntities":[{"checkId":"101","checkName":"rom","checkDesc":"rom checkDesc","checkStatus":"100","checkServices":[{"serviceName":"rom_maxSize","format":"LONG","serviceUnit":"MB","serviceTarget":"1024"}],"type":1},{"checkId":"102","checkName":"cpu","checkDesc":"cpu checkDesc","checkStatus":"100","checkServices":[{"serviceName":"cpu_num","format":"INT","serviceUnit":"PCS","serviceTarget":"4"},{"serviceName":"cpu_maxFreq","format":"FLOAT","serviceUnit":"G","serviceTarget":"1.0"}],"type":1}]}
+{
+    "vers": "0.0.1",
+    "code": "001",
+    "desc": "ParseEntity desc",
+    "checkEntities": [
+        {
+            "checkId": "001",
+            "checkName": "rom_maxSize",
+            "checkDesc": "rom_maxSize checkDesc...",
+            "checkStatus": "100",
+            "conditionMap": {
+                "gt": "1024.0",
+                "just": "1024.0",
+                "oneOf": "{1024,1024}",
+                "contain": "{1024,2048}",
+                "gtlt": "{1024,2048}"
+            },
+            "unit": "MB",
+            "type": 1,
+            "avail": true
+        },
+        {
+            "checkId": "002",
+            "checkName": "cpu_num",
+            "checkDesc": "cpu checkDesc...",
+            "checkStatus": "100",
+            "conditionMap": {
+                "gt": "4"
+            },
+            "unit": "PCS",
+            "type": 1,
+            "avail": true
+        },
+        {
+            "checkId": "003",
+            "checkName": "cpu_maxFreq",
+            "checkDesc": "cpu checkDesc...",
+            "checkStatus": "100",
+            "conditionMap": {
+                "gt": "0.9"
+            },
+            "unit": "GB",
+            "type": 1,
+            "avail": true
+        }
+    ]
+}

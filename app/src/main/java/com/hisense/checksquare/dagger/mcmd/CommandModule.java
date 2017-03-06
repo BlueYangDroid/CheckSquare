@@ -18,14 +18,12 @@ import dagger.Provides;
 public class CommandModule {
 
     @Provides
-    @Singleton
     @Named("CpuCommand")
     IPropCommand provideCpuCommand(){
         return new CpuCommand();
     }
 
     @Provides
-    @Singleton
     @Named("RomCommand")
     IPropCommand provideRomCommand(){
         return new RomCommand();

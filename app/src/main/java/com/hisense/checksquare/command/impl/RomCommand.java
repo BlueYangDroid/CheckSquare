@@ -8,10 +8,8 @@ import com.hisense.checksquare.command.IPropCommand;
 import com.hisense.checksquare.condition.ConditionMaster;
 import com.hisense.checksquare.condition.IConditioner;
 import com.hisense.checksquare.entity.CheckEntity;
-import com.hisense.checksquare.entity.CheckService;
 import com.hisense.checksquare.widget.Constants;
-import com.hisense.checksquare.widget.LogUtil;
-import com.hisense.checksquare.widget.StringUtil;
+import com.hisense.checksquare.widget.log.LogUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,90 +26,43 @@ public class RomCommand implements IPropCommand {
 
     @Override
     public CheckEntity checkProp(CheckEntity entity) {
-        LogUtil.d("CHECK_NAME_ROM enter ----> ");
-        List<CheckService> checkServices = entity.checkServices;
-        if (null != checkServices && !checkServices.isEmpty()) {
-            SparseBooleanArray serviceResults = new SparseBooleanArray(5);
-            int serviceSize = checkServices.size();
-            for (int i = 0; i < serviceSize; i++) {
-                CheckService service = checkServices.get(i);
+        LogUtil.d("RomCommand checkProp(): enter ----> ");
+        CheckEntity.ConditionMap conditionMap = entity.conditionMap;
+        if (null != conditionMap) {
+            if (Constants.CHECK_ITEM_ROM_MAXSIZE.equalsIgnoreCase(entity.checkName)) {
+                LogUtil.d("CHECK_ITEM_ROM_MAXSIZE enter ---->");
+                float[] rom = getRom();
+                float result = rom[0] / (1024 * 1024);
 
-                if (Constants.CHECK_SERVICE_ROM_MAXSIZE.equalsIgnoreCase(service.serviceName)) {
-                    LogUtil.d("CHECK_SERVICE_ROM_MAXSIZE enter ---->");
-                    long[] rom = getRom();
-                    long result = rom[0] / (1024 * 1024);
+                // 1,update service Actual
+                LogUtil.d("CHECK_SERVICE_ROM_MAXSIZE: Actual = " + result);
+                entity.actualValue = String.valueOf(result);
 
-                    // 1,update service Actual
-                    LogUtil.d("CHECK_SERVICE_ROM_MAXSIZE: Actual = " + result);
-                    service.serviceActual = String.valueOf(result);
+                // 2,update service Result
+                entity.checkStatus = mergeSizeResult(conditionMap, result);
 
-                    // 2,update service Result
-                    service = mergeSizeResult(service, result);
+            }
 
-                    // 3,record this result
-                    boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
-                    serviceResults.put(i, b);
-                    LogUtil.d("CHECK_SERVICE_ROM_MAXSIZE end <---- result = %s", b);
-                }
-            }// <---- end the service for{}
-
-            // 4,update entity Result
-            mergeAllResults(entity, serviceResults, serviceSize);
 
         } else {
             // services empty
-            entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
+            entity.checkStatus = CheckEntity.CHECK_STATUS_FAIL;
         }
 
-        LogUtil.d("CHECK_NAME_ROM end <---- result = %s", entity.checkResult);
+        LogUtil.d("RomCommand checkProp(): end <---- result = %s", entity.checkStatus);
         return entity;
     }
 
-    private CheckService mergeSizeResult(CheckService service, long result) {
-        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+    private String mergeSizeResult(CheckEntity.ConditionMap conditions, float actual) {
+        LogUtil.d("mergeSizeResult(): enter --> actual =  %f, conditions = %s",actual ,conditions);
+        IConditioner conditioner = ConditionMaster.newConditioner(RomCommand.class);
         boolean b = false;
         if (null != conditioner) {
-            b = conditioner.compare(service.serviceTarget, String.valueOf(result));
+            b = conditioner.compareConditionsFloat(conditions,actual);
         }
-        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
-        return service;
-    }
-
-    private void mergeAllResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
-        boolean isServicesOk = true;
-        int resSize = serviceResults.size();
-        if (resSize > 0 && resSize == serviceSize) {
-            for (int i = 0; i < resSize; i++) {
-                if (!serviceResults.valueAt(i)) {
-                    isServicesOk = false;
-                    break;
-                }
-            }
-            if (isServicesOk) {
-                entity.checkResult = CheckEntity.CHECK_STATUS_OK;
-            } else {
-                entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-            }
-        } else {
-            entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-        }
-    }
-
-    /**
-     * total memory
-     */
-    public void getRam() {
-        String str1 = "/proc/meminfo";
-        String str2="";
-        try {
-            FileReader fr = new FileReader(str1);
-            BufferedReader localBufferedReader = new BufferedReader(fr, 1024);
-            while ((str2 = localBufferedReader.readLine()) != null) {
-                LogUtil.d("CHECK_NAME_ROM getRamMemory(): ---- %s", str2);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        String status = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+        LogUtil.d("mergeSizeResult(): <-- compare = " + b);
+        return status;
     }
 
 
@@ -119,20 +70,20 @@ public class RomCommand implements IPropCommand {
      * Rom info array
      * @return {total, Available}
      */
-    public long[] getRom() {
-        long[] romInfo = new long[2];
+    public float[] getRom() {
+        float[] romInfo = new float[2];
         //Total rom memory
         File path = Environment.getDataDirectory();
         StatFs stat = new StatFs(path.getPath());
         long blockSize = stat.getBlockSize();
         long totalBlocks = stat.getBlockCount();
         long total = totalBlocks * blockSize;
-        romInfo[0] = total;
+        romInfo[0] = (float) total;
 
         //Available rom memory
         long availableBlocks = stat.getAvailableBlocks();
         long avail = blockSize * availableBlocks;
-        romInfo[1] = avail;
+        romInfo[1] = (float) avail;
         LogUtil.d("CHECK_NAME_ROM getRomMemroy(): ---- " + total/(1024*1024) + "/" + avail/(1024*1024));
         return romInfo;
     }

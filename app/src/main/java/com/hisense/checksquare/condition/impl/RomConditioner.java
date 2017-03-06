@@ -1,6 +1,7 @@
 package com.hisense.checksquare.condition.impl;
 
 import com.hisense.checksquare.condition.IConditioner;
+import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.widget.Constants;
 import com.hisense.checksquare.widget.StringUtil;
 
@@ -8,22 +9,25 @@ import com.hisense.checksquare.widget.StringUtil;
  * Created by yanglijun.ex on 2017/2/24.
  */
 
-public class RomConditioner implements IConditioner{
+public class RomConditioner extends CommonConditioner{
 
     /**
-     * case Constants.CHECK_SERVICE_ROM_MAXSIZE
+     * case Constants.CHECK_ITEM_ROM_MAXSIZE
      */
     private String mType;
+
+    public RomConditioner() {
+    }
 
     public RomConditioner(String type) {
         this.mType = type;
     }
 
     @Override
-    public boolean compare(String target, String result) {
+    public boolean compare(String target, String actual) {
 
-        if (Constants.CHECK_SERVICE_ROM_MAXSIZE.equalsIgnoreCase(mType)) {
-            return compareRomSize(target, result);
+        if (Constants.CHECK_ITEM_ROM_MAXSIZE.equalsIgnoreCase(mType)) {
+            return compareRomSize(target, actual);
         }
         return false;
     }

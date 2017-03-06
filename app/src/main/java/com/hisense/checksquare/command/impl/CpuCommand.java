@@ -1,21 +1,15 @@
 package com.hisense.checksquare.command.impl;
 
-import android.util.SparseBooleanArray;
-
 import com.hisense.checksquare.command.IPropCommand;
 import com.hisense.checksquare.condition.ConditionMaster;
 import com.hisense.checksquare.condition.IConditioner;
+import com.hisense.checksquare.condition.impl.CpuConditioner;
 import com.hisense.checksquare.entity.CheckEntity;
-import com.hisense.checksquare.entity.CheckService;
 import com.hisense.checksquare.widget.CommandUtil;
 import com.hisense.checksquare.widget.Constants;
-import com.hisense.checksquare.widget.LogUtil;
+import com.hisense.checksquare.widget.FileUtil;
+import com.hisense.checksquare.widget.log.LogUtil;
 import com.hisense.checksquare.widget.StringUtil;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Created by yanglijun.ex on 2017/2/23.
@@ -27,137 +21,72 @@ public class CpuCommand implements IPropCommand {
 
     @Override
     public CheckEntity checkProp(CheckEntity entity) {
-        LogUtil.d("CHECK_NAME_CPU enter ----> ");
-        List<CheckService> checkServices = entity.checkServices;
-        if (null != checkServices && !checkServices.isEmpty()) {
-            SparseBooleanArray serviceResults = new SparseBooleanArray(5);
-            int serviceSize = checkServices.size();
-            for (int i = 0; i< serviceSize; i++) {
-                CheckService service = checkServices.get(i);
+        LogUtil.d("CpuCommand checkProp(): enter ----> ");
+        CheckEntity.ConditionMap conditionMap = entity.conditionMap;
+        if (null != conditionMap) {
 
-                if (Constants.CHECK_SERVICE_CPU_MAXFREQ.equalsIgnoreCase(service.serviceName)) {
-                    LogUtil.d("CHECK_SERVICE_CPU_MAXFREQ enter ---->");
-                    String strResult = CommandUtil.processCommand(COMMAND_CPU_MAX_FREQ).trim();
-                    long parseLong = Long.parseLong(strResult);
-                    float result = (float) parseLong / (1000 * 1000);
-                    // 1,update service Actual
-                    LogUtil.d("CHECK_SERVICE_CPU_MAXFREQ: Actual = %f", result);
-                    service.serviceActual = String.valueOf(result);
+            if (Constants.CHECK_ITEM_CPU_MAXFREQ.equalsIgnoreCase(entity.checkName)) {
+                LogUtil.d("CHECK_ITEM_CPU_MAXFREQ enter ---->");
+                float actual = getMaxFreq();
+                // 1,update Actual
+                entity.actualValue = String.valueOf(actual);
 
-                    // 2,update service Result
-                    service = mergeFreqResult(service, result);
+                // 2,update status
+                entity.checkStatus = mergeFreqResult(conditionMap, actual);
 
-                    // 3,record this result
-                    boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
-                    serviceResults.put(i, b);
-                    LogUtil.d("CHECK_SERVICE_CPU_MAXFREQ end <---- result = %s", b);
+            } else if (Constants.CHECK_ITEM_CPU_NUM.equalsIgnoreCase(entity.checkName)) {
+                LogUtil.d("CHECK_ITEM_CPU_NUM enter ---->");
+                int cpuNum = getCpuNum();
+                // 1,update service Actual
+                entity.actualValue = String.valueOf(cpuNum);
 
-                } else if (Constants.CHECK_SERVICE_CPU_NUM.equalsIgnoreCase(service.serviceName)) {
-                    LogUtil.d("CHECK_SERVICE_CPU_NUM enter ---->");
-                    int cpuNum = getCpuNum();
-                    // 1,update service Actual
-                    service.serviceActual = String.valueOf(cpuNum);
-
-                    // 2,update service Result
-                    service = mergeCpuNumResult(service, cpuNum);
-
-                    // 3,record this result
-                    boolean b = CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(service.serviceResult);
-                    serviceResults.put(i, b);
-                    LogUtil.d("CHECK_SERVICE_CPU_NUM end <---- result = %d", cpuNum);
-                }
-            }// <---- end the service for{}
-
-            // 4,update entity Result by all service records
-            entity = mergeAllResults(entity, serviceResults, serviceSize);
-
+                // 2,update service Result
+                entity.checkStatus = mergeCpuNumResult(conditionMap, cpuNum);
+            }
         } else {
-            // services empty
-            entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
+            // conditionMap empty
+            entity.checkStatus = CheckEntity.CHECK_STATUS_FAIL;
         }
 
-        LogUtil.d("CHECK_NAME_CPU end <---- result = %s", entity.checkResult);
+        LogUtil.d("CpuCommand checkProp() end <---- result = %s", entity.checkStatus);
         return entity;
     }
 
-    private CheckService mergeCpuNumResult(CheckService service, int cpuNum) {
-        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+    private String mergeCpuNumResult(CheckEntity.ConditionMap conditions, float actual) {
+        LogUtil.d("mergeCpuNumResult(): enter --> actual =  %f, conditions = %s",actual ,conditions);
+        IConditioner conditioner = ConditionMaster.newConditioner(CpuConditioner.class);
         boolean b = false;
         if (null != conditioner) {
-            b = conditioner.compare(service.serviceTarget, String.valueOf(cpuNum));
+            b = conditioner.compareConditionsFloat(conditions,actual);
         }
-        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
-
-        return service;
+        String status = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+        LogUtil.d("mergeCpuNumResult(): <-- compare = " + b);
+        return status;
     }
 
-    private CheckService mergeFreqResult(CheckService service, float result) {
-        IConditioner conditioner = ConditionMaster.newConditioner(service.serviceName);
+    private String mergeFreqResult(CheckEntity.ConditionMap conditions, float actual) {
+        LogUtil.d("mergeFreqResult(): enter --> actual =  %f, conditions = %s",actual ,conditions);
+        IConditioner iConditioner = ConditionMaster.newConditioner(CpuConditioner.class);
         boolean b = false;
-        if (null != conditioner) {
-            b = conditioner.compare(service.serviceTarget, String.valueOf(result));
+        if (null != iConditioner) {
+            b = iConditioner.compareConditionsFloat(conditions, actual);
         }
-        service.serviceResult = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
-        return service;
-    }
-
-    private CheckEntity mergeAllResults(CheckEntity entity, SparseBooleanArray serviceResults, int serviceSize) {
-        boolean isServicesOk = true;
-        int resSize = serviceResults.size();
-        if (resSize > 0 && resSize == serviceSize) {
-            for (int i = 0; i < resSize; i++) {
-                if (!serviceResults.valueAt(i)) {
-                    isServicesOk = false;
-                    break;
-                }
-            }
-            if (isServicesOk) {
-                entity.checkResult = CheckEntity.CHECK_STATUS_OK;
-            } else {
-                entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-            }
-        } else {
-            entity.checkResult = CheckEntity.CHECK_STATUS_FAIL;
-        }
-        return entity;
+        String status = b? CheckEntity.CHECK_STATUS_OK: CheckEntity.CHECK_STATUS_FAIL;
+        LogUtil.d("mergeFreqResult(): <-- compare = " + b);
+        return status;
     }
 
     // 获取CPU核心数
-    public int getCpuNum() {
-        FileReader fr = null;
-        BufferedReader br = null;
-        try {
-            fr =  new FileReader("/proc/cpuinfo");
-            br = new BufferedReader(fr);
-            StringBuilder builder = new StringBuilder();
-            String line;
-            while ((line = br.readLine()) != null) {
-                builder.append(line);
-            }
-            String cpuStr = builder.toString();
-            String strPocessor = "processor";
-            LogUtil.d("CHECK_NAME_CPU getCpuNum(): cpuStr = %s", cpuStr);
-            return StringUtil.stringNumbers(cpuStr, strPocessor);
+    private int getCpuNum() {
+        String cpuStr = FileUtil.readFile("/proc/cpuinfo");
+        String strPocessor = "processor";
+        LogUtil.d("getCpuNum(): <-- getCpuNum(): cpuStr = %s", cpuStr);
+        return StringUtil.stringNumbers(cpuStr, strPocessor);
+    }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally {
-            if (fr != null) {
-                try {
-                    fr.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return 0;
+    private float getMaxFreq() {
+        String strResult = CommandUtil.processCommand(COMMAND_CPU_MAX_FREQ).trim();
+        long parseLong = Long.parseLong(strResult);
+        return (float) parseLong / (1000 * 1000);
     }
 }

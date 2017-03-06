@@ -4,12 +4,9 @@ import com.hisense.checksquare.base.IMainConstract;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.entity.CheckEntityGroup;
 import com.hisense.checksquare.entity.ParseEntity;
-import com.hisense.checksquare.widget.StringUtil;
 import com.mcxiaoke.bus.Bus;
 import com.mcxiaoke.bus.annotation.BusReceiver;
-import com.hisense.checksquare.widget.LogUtil;
-
-import org.reactivestreams.Publisher;
+import com.hisense.checksquare.widget.log.LogUtil;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -17,15 +14,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 import io.reactivex.functions.Predicate;
 import io.reactivex.internal.operators.flowable.FlowableFromObservable;
@@ -130,7 +121,6 @@ public class MainPresenter implements MainPresenterInteract{
     }
 
     private void onFilteOneKeyEntities(final List<CheckEntity> adapterEntities){
-//        new Thread(new FilteTask(this, adapterEntities)).start();
 
         final List<CheckEntity> toCheckProps = new ArrayList<>();
         final List<CheckEntity> toCheckfuncs = new ArrayList<>();
@@ -267,19 +257,13 @@ public class MainPresenter implements MainPresenterInteract{
                         LogUtil.d("toCheckProperty onNext(): entity = %s", entity);
                         // update the ok/fail status
                         if (null != view) {
-                            String checkResult = entity.checkResult;
-                            if (!StringUtil.isEmpty(checkResult)) {
-                                entity.checkStatus = checkResult;
-                            } else {
-                                entity.checkStatus = CheckEntity.CHECK_STATUS_FAIL;
-                            }
                             notifyItemStatus(entity);
                         }
                     }
 
                     @Override
                     public void onError(Throwable t) {
-                        LogUtil.d("toCheckProperty onError(): checkName = %s, t = %s", tempEn.checkName, t.toString());
+                        LogUtil.e("toCheckProperty onError(): checkName = %s, t = %s", tempEn.checkName, t.toString());
                         // update the fail status
                         if (null != view) {
                             tempEn.checkStatus = CheckEntity.CHECK_STATUS_FAIL;
@@ -339,47 +323,6 @@ public class MainPresenter implements MainPresenterInteract{
      */
     @Override
     public void onCheckPropertiesDone() {
-
-    }
-
-    /**
-     * after one key ,
-     * filter the adapter datas to check
-     */
-    private static class FilteTask implements Runnable {
-
-        private WeakReference<MainPresenter> reference;
-        private List<CheckEntity> adapterEntities;
-
-        public FilteTask(MainPresenter reference, List<CheckEntity> adapterEntities) {
-            this.reference = new WeakReference<MainPresenter>(reference);
-            this.adapterEntities = new ArrayList<>(adapterEntities);
-        }
-
-        @Override
-
-        public void run() {
-            List<CheckEntity> toCheckProps = new ArrayList<>();
-            List<CheckEntity> toCheckfuncs = new ArrayList<>();
-            for (CheckEntity entity : adapterEntities) {
-                if (CheckEntity.CHECK_STATUS_TOCHECK
-                        .equalsIgnoreCase(entity.checkStatus)) {
-
-                        if (CheckEntity.TYPE_ITEM_VIEW_HW == entity.type) {
-                            toCheckProps.add(entity);
-                        } else if (CheckEntity.TYPE_ITEM_VIEW_FUNC == entity.type) {
-                            toCheckfuncs.add(entity);
-                        }
-                    }
-                }
-                MainPresenter mainPresenter = reference.get();
-                if (mainPresenter != null) {
-                    if (!toCheckfuncs.isEmpty() || !toCheckProps.isEmpty()) {
-                        CheckEntityGroup checkEntityGroup = new CheckEntityGroup(toCheckProps, toCheckfuncs);
-                        mainPresenter.onFilteEntitiesDone(checkEntityGroup);
-                    }
-                }
-            }
 
     }
 

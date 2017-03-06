@@ -10,7 +10,6 @@ import com.chad.library.adapter.base.BaseMultiItemQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
 import com.hisense.checksquare.R;
 import com.hisense.checksquare.entity.CheckEntity;
-import com.hisense.checksquare.entity.CheckService;
 
 import java.util.List;
 
@@ -65,23 +64,17 @@ public class ItemClickAdapter extends BaseMultiItemQuickAdapter<CheckEntity, Bas
     }
 
     private void convertResults(BaseViewHolder helper, CheckEntity item) {
-        List<CheckService> checkServices = item.checkServices;
-        if (checkServices != null && !checkServices.isEmpty()) {
-            LinearLayout linearLayout = (LinearLayout) helper.getView(R.id.tv_result);
-
-            int size = checkServices.size();
-            for (int i = 0; i < size; i++) {
-                View view = linearLayout.getChildAt(i);
-                if (null != view && view instanceof TextView) {
-                    ((TextView) view).setText(new StringBuilder(checkServices.get(i).toString()).append("\n"));
-                } else {
-                    TextView textView = new TextView(mContext);
-                    textView.setText(new StringBuilder(checkServices.get(i).toString()).append("\n"));
-                    textView.setTextColor(mContext.getResources().getColor(R.color.txt_color));
-                    textView.setTextSize(13);
-                    linearLayout.addView(textView);
-                }
-            }
+        StringBuilder resContent = new StringBuilder("status:").append(item.checkStatus).append(",  actual:").append(item.actualValue).append("\n").append(item.conditionMap).append("\n");
+        LinearLayout linearLayout = (LinearLayout) helper.getView(R.id.tv_result);
+        View view = linearLayout.getChildAt(0);
+        if (null != view && view instanceof TextView) {
+            ((TextView) view).setText(resContent);
+        } else {
+            TextView textView = new TextView(mContext);
+            textView.setText(resContent);
+            textView.setTextColor(mContext.getResources().getColor(R.color.txt_color));
+            textView.setTextSize(13);
+            linearLayout.addView(textView);
         }
     }
 

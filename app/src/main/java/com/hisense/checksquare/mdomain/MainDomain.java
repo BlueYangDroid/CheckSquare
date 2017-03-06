@@ -1,28 +1,22 @@
 package com.hisense.checksquare.mdomain;
 
-import com.bluelinelabs.logansquare.LoganSquare;
-import com.hisense.checksquare.MyApplication;
 import com.hisense.checksquare.base.IMainConstract;
 import com.hisense.checksquare.dagger.mdomain.DaggerMainDomainComponent;
 import com.hisense.checksquare.dagger.mdomain.MainDomainComponent;
 import com.hisense.checksquare.dagger.mdomain.MainDomainModule;
-import com.hisense.checksquare.database.EntityDao;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.entity.ParseEntity;
 import com.hisense.checksquare.widget.AssetUtil;
 import com.hisense.checksquare.command.CheckCommandRouter;
 import com.hisense.checksquare.widget.Constants;
-import com.hisense.checksquare.widget.LogUtil;
+import com.hisense.checksquare.widget.log.LogUtil;
 import com.hisense.checksquare.widget.ParseUtil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;

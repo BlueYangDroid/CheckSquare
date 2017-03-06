@@ -90,6 +90,7 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="action_settings">Settings</string>
+    <string name="action_one_key_check">Check All</string>
     <string name="check_status_to_do">TO CHECK %s</string>
     <string name="check_status_done">%s CHECK DONE</string>
 

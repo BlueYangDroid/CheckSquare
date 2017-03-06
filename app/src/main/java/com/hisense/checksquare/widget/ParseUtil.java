@@ -1,7 +1,7 @@
 package com.hisense.checksquare.widget;
 
 import com.bluelinelabs.logansquare.LoganSquare;
-import com.bluelinelabs.logansquare.ParameterizedType;
+import com.hisense.checksquare.widget.log.LogUtil;
 
 import java.io.IOException;
 import java.io.InputStream;

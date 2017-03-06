@@ -1,6 +1,7 @@
 package com.hisense.checksquare.condition;
 
 import com.hisense.checksquare.command.impl.CpuCommand;
+import com.hisense.checksquare.condition.impl.CommonConditioner;
 import com.hisense.checksquare.condition.impl.CpuConditioner;
 import com.hisense.checksquare.condition.impl.RomConditioner;
 import com.hisense.checksquare.widget.Constants;
@@ -14,19 +15,27 @@ import java.util.Comparator;
 
 public class ConditionMaster {
 
-    public synchronized static IConditioner newConditioner(String serviceName) {
-        IConditioner conditioner = null;
-        switch (serviceName) {
-            case Constants.CHECK_SERVICE_CPU_NUM:
-            case Constants.CHECK_SERVICE_CPU_MAXFREQ:
-                conditioner = new CpuConditioner(serviceName);
-                break;
+    /**
+     * new 一个 common conditioner 调节器，将按照float类型对参数进行转换计算
+     * @return
+     */
+    public synchronized static IConditioner newConditioner() {
+        return newConditioner(CommonConditioner.class);
+    }
 
-            case Constants.CHECK_SERVICE_ROM_MAXSIZE:
-                conditioner = new RomConditioner(serviceName);
-                break;
-            default:
-                break;
+    /**
+     * 分发条件判断器件
+     * @return
+     */
+    public synchronized static IConditioner newConditioner(Class conClazz) {
+        IConditioner conditioner = null;
+
+        if (CpuConditioner.class.getSimpleName().equalsIgnoreCase(conClazz.getSimpleName())) {
+            conditioner = new CpuConditioner();
+        } else if ("RomConditioner".equalsIgnoreCase(conClazz.getSimpleName())) {
+            conditioner = new RomConditioner();
+        } else {
+            conditioner = new CommonConditioner();
         }
         return conditioner;
     }

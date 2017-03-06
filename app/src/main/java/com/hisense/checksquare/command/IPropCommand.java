@@ -8,5 +8,10 @@ import com.hisense.checksquare.entity.CheckEntity;
 
 public interface IPropCommand {
 
+    /**
+     * do real check
+     * @param entity
+     * @return
+     */
     CheckEntity checkProp(CheckEntity entity);
 }

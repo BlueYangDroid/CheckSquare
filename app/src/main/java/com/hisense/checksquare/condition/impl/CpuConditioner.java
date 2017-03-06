@@ -1,33 +1,34 @@
 package com.hisense.checksquare.condition.impl;
 
-import com.hisense.checksquare.condition.IConditioner;
 import com.hisense.checksquare.widget.Constants;
-import com.hisense.checksquare.widget.LogUtil;
 import com.hisense.checksquare.widget.StringUtil;
 
 /**
  * Created by yanglijun.ex on 2017/2/24.
  */
 
-public class CpuConditioner implements IConditioner{
+public class CpuConditioner extends CommonConditioner{
 
     /**
-     * case Constants.CHECK_SERVICE_CPU_NUM
-     * case Constants.CHECK_SERVICE_CPU_MAXFREQ
+     * case Constants.CHECK_ITEM_CPU_NUM
+     * case Constants.CHECK_ITEM_CPU_MAXFREQ
      */
     private String mType;
+
+    public CpuConditioner() {
+    }
 
     public CpuConditioner(String type) {
         this.mType = type;
     }
 
     @Override
-    public boolean compare(String target, String result) {
+    public boolean compare(String target, String actual) {
 
-        if (Constants.CHECK_SERVICE_CPU_NUM.equalsIgnoreCase(mType)) {
-            return compareCpuNum(target, result);
-        } else if (Constants.CHECK_SERVICE_CPU_MAXFREQ.equalsIgnoreCase(mType)){
-            return compareCpuFreq(target, result);
+        if (Constants.CHECK_ITEM_CPU_NUM.equalsIgnoreCase(mType)) {
+            return compareCpuNum(target, actual);
+        } else if (Constants.CHECK_ITEM_CPU_MAXFREQ.equalsIgnoreCase(mType)){
+            return compareCpuFreq(target, actual);
         }
         return false;
     }
@@ -61,4 +62,6 @@ public class CpuConditioner implements IConditioner{
         }
         return false;
     }
+
+
 }

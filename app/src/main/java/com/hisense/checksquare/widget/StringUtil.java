@@ -1,5 +1,7 @@
 package com.hisense.checksquare.widget;
 
+import com.hisense.checksquare.widget.log.LogUtil;
+
 /**
  * Created by yanglijun.ex on 2017/2/22.
  */

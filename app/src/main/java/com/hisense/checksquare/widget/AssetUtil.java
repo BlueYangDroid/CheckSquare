@@ -30,7 +30,12 @@ public class AssetUtil {
         return "";
     }
 
-    public static InputStream getStreamFromAssets(String fileName) {
+        /**
+         * get the json property file data
+         * @param fileName
+         * @return
+         */
+        public static InputStream getStreamFromAssets(String fileName) {
         try {
             return MyApplication.getContext().getResources().getAssets().open(fileName);
         } catch (IOException e) {

@@ -12,34 +12,24 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.listener.OnItemClickListener;
+import com.hisense.checksquare.MyApplication;
 import com.hisense.checksquare.R;
 import com.hisense.checksquare.base.IMainConstract;
 import com.hisense.checksquare.dagger.mactivity.DaggerMainComponent;
 import com.hisense.checksquare.dagger.mactivity.MainModule;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.widget.ItemClickAdapter;
-import com.hisense.checksquare.widget.LogUtil;
-import com.jakewharton.rxbinding.support.v7.widget.RxRecyclerView;
-import com.jakewharton.rxbinding.support.v7.widget.RxRecyclerViewAdapter;
-import com.jakewharton.rxbinding.view.RxView;
-import com.jakewharton.rxbinding.widget.RxAdapterView;
+import com.hisense.checksquare.widget.log.LogUtil;
+import com.hisense.checksquare.widget.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.internal.operators.flowable.FlowableFromObservable;
-import rx.functions.Action1;
-
 
 public class MainActivity extends AppCompatActivity implements IMainConstract.IMainView , View.OnClickListener{
 
@@ -61,6 +51,19 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
         initDaggerObjects();
 
         getDatasAsync();
+        LogUtil.d("displayed time --> onCreate()");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LogUtil.d("displayed time --> onStart()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        LogUtil.d("displayed time --> onResume()");
     }
 
     private void initView() {
@@ -71,19 +74,24 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                List<CheckEntity> adapterEntities = itemClickAdapter.getData();
-                if (null != adapterEntities && !adapterEntities.isEmpty()) {
-                    List<CheckEntity> entities = new ArrayList<>(adapterEntities);
-                    if (null != mPresenter) {
-                        // one key check
-                        mPresenter.onOneKeyCheckEntities(entities);
-                        // show tip
-                        Snackbar.make(view, "CHECK PROPERTY ITEMS", Snackbar.LENGTH_SHORT)
-                                .setAction("Ok", MainActivity.this).show();
-                    }
-                }
+                onOneKeyCheck(view);
             }
         });
+    }
+
+    private void onOneKeyCheck(View view) {
+        List<CheckEntity> adapterEntities = itemClickAdapter.getData();
+        if (null != adapterEntities && !adapterEntities.isEmpty()) {
+            List<CheckEntity> entities = new ArrayList<>(adapterEntities);
+            if (null != mPresenter) {
+                // one key check
+                mPresenter.onOneKeyCheckEntities(entities);
+                // show tip App.getAppContext().getCurActivity().getWindow().getDecorView()
+                Snackbar.make(MyApplication.getInstance().getCurActivity().getWindow().getDecorView()
+                        , "CHECK PROPERTY ITEMS", Snackbar.LENGTH_SHORT)
+                        .setAction("Ok", MainActivity.this).show();
+            }
+        }
     }
 
     private void initDaggerObjects() {
@@ -114,17 +122,17 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
                     CheckEntity entity = (CheckEntity) item;
                     String checkStatus = entity.checkStatus;
                     // call check domain
-                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(checkStatus)) {
+                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(checkStatus) || CheckEntity.CHECK_STATUS_FAIL.equalsIgnoreCase(checkStatus) || StringUtil.isEmpty(checkStatus)) {
                         mPresenter.toCheckProperty(entity);
                     }
                     // toast strTip
                     String strTip = "";
-                    if (CheckEntity.CHECK_STATUS_TOCHECK.equalsIgnoreCase(checkStatus) || CheckEntity.CHECK_STATUS_CHECKING.equalsIgnoreCase(checkStatus)) {
-                        strTip = getString(R.string.check_status_to_do, entity.checkName)  ;
-                    } else if (CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(checkStatus) || CheckEntity.CHECK_STATUS_FAIL.equalsIgnoreCase(checkStatus)) {
+                     if (CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(checkStatus)) {
                         strTip = getString(R.string.check_status_done, entity.checkName)  ;
+                    } else {
+                        strTip = getString(R.string.check_status_to_do, entity.checkName)  ;
                     }
-                    Snackbar.make(view, strTip, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(view, strTip, Snackbar.LENGTH_SHORT)
                             .setAction("Ok", MainActivity.this).show();
 //                    Toast.makeText(MainActivity.this, strTip, Toast.LENGTH_SHORT).show();
                 }
@@ -189,6 +197,10 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
         if (id == R.id.action_settings) {
             return true;
         }
+        if (id == R.id.action_one_key_check) {
+            onOneKeyCheck(item.getActionView());
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -208,8 +220,7 @@ public class MainActivity extends AppCompatActivity implements IMainConstract.IM
     @Override
     public void onCheckItemStatus(String status, CheckEntity entity) {
         LogUtil.d("onCheckItemStatus(): status = %s, entity = %s", status, entity);
-        if (CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(status)
-                || CheckEntity.CHECK_STATUS_FAIL.equalsIgnoreCase(status)) {
+        if (CheckEntity.CHECK_STATUS_OK.equalsIgnoreCase(status) || CheckEntity.CHECK_STATUS_FAIL.equalsIgnoreCase(status) || StringUtil.isEmpty(status)) {
             // update the counters and dialog
             int get = mCheckDone.incrementAndGet();
             showCheckDialog();
