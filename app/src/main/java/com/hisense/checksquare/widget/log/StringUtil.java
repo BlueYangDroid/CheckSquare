@@ -1,4 +1,6 @@
-package com.hisense.checksquare.widget;
+package com.hisense.checksquare.widget.log;
+
+import android.text.TextUtils;
 
 import com.hisense.checksquare.widget.log.LogUtil;
 
@@ -7,10 +9,10 @@ import com.hisense.checksquare.widget.log.LogUtil;
  */
 
 public class StringUtil {
-    public static boolean isEmpty(String... args){
+    public static boolean isEmpty(CharSequence... args){
         if (null != args && args.length > 0) {
-            for (String str : args) {
-                if (str == null || str.length() == 0) {
+            for (CharSequence str : args) {
+                if (TextUtils.isEmpty(str)) {
                     return true;
                 }
             }

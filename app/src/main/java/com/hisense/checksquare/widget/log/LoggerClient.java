@@ -8,6 +8,14 @@ import com.orhanobut.logger.Logger;
  */
 
 public class LoggerClient implements ILogClient {
+
+    private boolean mSaveFlag;
+
+    @Override
+    public void saveFile(boolean flag) {
+        mSaveFlag = flag;
+    }
+
     public void init(String tag) {
         Logger.init(tag)            // default PRETTYLOGGER or use just init()
                 .methodCount(2)                 // default 2
@@ -24,8 +32,8 @@ public class LoggerClient implements ILogClient {
     }
 
     @Override
-    public void d(String message, Object... args) {
-        Logger.d(message, args);
+    public void d(CharSequence message, Object... args) {
+        Logger.d(message.toString(), args);
     }
 
     @Override
@@ -34,7 +42,7 @@ public class LoggerClient implements ILogClient {
     }
 
     @Override
-    public void e(String message, Object... args) {
+    public void e(CharSequence message, Object... args) {
         Logger.e(null, message, args);
     }
 

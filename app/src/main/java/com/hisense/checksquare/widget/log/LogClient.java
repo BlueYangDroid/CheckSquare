@@ -8,6 +8,12 @@ import android.util.Log;
 
 public class LogClient implements ILogClient {
     private String tag;
+    private boolean mSaveFlag;
+
+    @Override
+    public void saveFile(boolean flag) {
+        mSaveFlag = flag;
+    }
 
     @Override
     public void init(String t) {
@@ -21,8 +27,8 @@ public class LogClient implements ILogClient {
     }
 
     @Override
-    public void d(String message, Object... args) {
-        Log.d(tag, String.format(message, args));
+    public void d(CharSequence message, Object... args) {
+        Log.d(tag, String.format(message.toString(), args));
     }
 
     @Override
@@ -31,8 +37,8 @@ public class LogClient implements ILogClient {
     }
 
     @Override
-    public void e(String message, Object... args) {
-        Log.e(tag, String.format(message, args));
+    public void e(CharSequence message, Object... args) {
+        Log.e(tag, String.format(message.toString(), args));
     }
 
     @Override

@@ -31,7 +31,8 @@ public class MyApplication extends Application {
         app = this;
         // logger init
         if (BuildConfig.DEBUG) {
-            LogUtil.init("CheckSquare");
+            LogUtil.init("LogTAG");
+            LogUtil.saveFile(true);
         }
         // activity life cycle manager
         store = new Stack<>();

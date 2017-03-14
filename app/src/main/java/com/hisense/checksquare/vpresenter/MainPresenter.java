@@ -312,7 +312,7 @@ public class MainPresenter implements MainPresenterInteract{
      */
     @BusReceiver
     public void onParseEntityEvent(ParseEntity parseEntity) {
-        LogUtil.d(parseEntity);
+        LogUtil.dObj(parseEntity);
 //        Bus.getDefault().post(new Object());
     }
 

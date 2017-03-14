@@ -9,7 +9,7 @@ import com.hisense.checksquare.widget.CommandUtil;
 import com.hisense.checksquare.widget.Constants;
 import com.hisense.checksquare.widget.FileUtil;
 import com.hisense.checksquare.widget.log.LogUtil;
-import com.hisense.checksquare.widget.StringUtil;
+import com.hisense.checksquare.widget.log.StringUtil;
 
 /**
  * Created by yanglijun.ex on 2017/2/23.

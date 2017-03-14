@@ -1,7 +1,7 @@
 package com.hisense.checksquare.condition.impl;
 
 import com.hisense.checksquare.widget.Constants;
-import com.hisense.checksquare.widget.StringUtil;
+import com.hisense.checksquare.widget.log.StringUtil;
 
 /**
  * Created by yanglijun.ex on 2017/2/24.

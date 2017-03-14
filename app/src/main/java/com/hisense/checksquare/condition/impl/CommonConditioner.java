@@ -3,7 +3,7 @@ package com.hisense.checksquare.condition.impl;
 import com.hisense.checksquare.condition.IConditioner;
 import com.hisense.checksquare.entity.CheckEntity;
 import com.hisense.checksquare.widget.log.LogUtil;
-import com.hisense.checksquare.widget.StringUtil;
+import com.hisense.checksquare.widget.log.StringUtil;
 
 import java.text.DecimalFormat;
 import java.util.StringTokenizer;

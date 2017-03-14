@@ -8,13 +8,15 @@ public interface ILogClient {
 
     void init(String tag);
 
+    void saveFile(boolean flag);
+
     ILogClient tag(String tag);
 
-    void d(String message, Object... args);
+    void d(CharSequence message, Object... args);
 
     void d(Object object);
 
-    void e(String message, Object... args);
+    void e(CharSequence message, Object... args);
 
     void e(Object object);
 

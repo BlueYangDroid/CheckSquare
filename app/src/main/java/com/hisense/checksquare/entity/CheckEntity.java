@@ -37,12 +37,33 @@ public class CheckEntity  implements MultiItemEntity {
     public int type;    // 1 硬件类型，2 接口类型
     public boolean avail;
 
+    @JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.NONPRIVATE_FIELDS)
+    public static class ConditionMap {
+        public String gt;   // 大于
+        public String just; // 即为某值
+        public String oneOf;    // 数组中的一个
+        public String contain;  // 包含配置数组
+        public String gtlt;     // 大于数组中的小值，小于数组中的大值
+
+        @Override
+        public String toString() {
+            return new StringBuilder().append("ConditionMap{")
+                    .append("gt='").append(gt).append("\'")
+                    .append(", just='").append(just).append("\'")
+                    .append(", oneOf='" ).append(oneOf).append("\'")
+                    .append(", contain='" ).append( contain ).append("\'")
+                    .append(", gtlt='" ).append( gtlt ).append("\'")
+                    .append("}").toString();
+        }
+    }
+
     public CheckEntity() {
     }
 
     public CheckEntity(int type) {
         this.type = type;
     }
+
 
     @Generated(hash = 1096645706)
     public CheckEntity(String checkId, String checkName, String checkDesc, String checkStatus, String actualValue,
@@ -57,7 +78,6 @@ public class CheckEntity  implements MultiItemEntity {
         this.type = type;
         this.avail = avail;
     }
-
 
     @Override   // MultiItemEntity annotation
     public int getItemType() {
@@ -148,26 +168,6 @@ public class CheckEntity  implements MultiItemEntity {
 
     public void setAvail(boolean avail) {
         this.avail = avail;
-    }
-
-    @JsonObject(fieldDetectionPolicy = JsonObject.FieldDetectionPolicy.NONPRIVATE_FIELDS)
-    public static class ConditionMap {
-        public String gt;
-        public String just;
-        public String oneOf;
-        public String contain;
-        public String gtlt;
-
-        @Override
-        public String toString() {
-            return new StringBuilder().append("ConditionMap{")
-                    .append("gt='").append(gt).append("\'")
-                    .append(", just='").append(just).append("\'")
-                    .append(", oneOf='" ).append(oneOf).append("\'")
-                    .append(", contain='" ).append( contain ).append("\'")
-                    .append(", gtlt='" ).append( gtlt ).append("\'")
-                    .append("}").toString();
-        }
     }
 
     public static class ConditionConverter implements PropertyConverter<ConditionMap, String> {
